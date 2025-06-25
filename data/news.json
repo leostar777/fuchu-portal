@@ -1,0 +1,14 @@
+[
+  {
+    "title": "府中市からのお知らせ（サンプル）",
+    "link": "https://www.city.fuchu.tokyo.jp/",
+    "pubDate": "2025-06-25T12:19:00.000Z",
+    "contentSnippet": "これはサンプルニュースです。実際のRSSフィードが利用可能になると、最新のニュースが表示されます。"
+  },
+  {
+    "title": "府中市イベント情報（サンプル）",
+    "link": "https://www.city.fuchu.tokyo.jp/",
+    "pubDate": "2025-06-24T12:19:00.000Z",
+    "contentSnippet": "府中市で開催される各種イベントの情報をお知らせします。詳細は公式サイトをご確認ください。"
+  }
+]
