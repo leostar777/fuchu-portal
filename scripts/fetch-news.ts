@@ -16,11 +16,15 @@ async function fetchNews(): Promise<void> {
   try {
     const newsItems: NewsItem[] = [];
     
-    const rssUrls = [
-      'https://www.city.fuchu.tokyo.jp/rss/news.xml', // 仮想URL
+    const FEEDS = [
+      'https://news.google.com/rss/search?q=%E5%BA%9C%E4%B8%AD%E5%B8%82&hl=ja&gl=JP&ceid=JP:ja',
+      
+      'https://www3.nhk.or.jp/rss/news/cat0.xml',
+      
+      'https://news.yahoo.co.jp/rss/topics/top-picks.xml'
     ];
 
-    for (const rssUrl of rssUrls) {
+    for (const rssUrl of FEEDS) {
       try {
         console.log(`Fetching RSS from: ${rssUrl}`);
         const feed = await parser.parseURL(rssUrl);
@@ -46,6 +50,11 @@ async function fetchNews(): Promise<void> {
     newsItems.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
 
     const latestNews = newsItems.slice(0, 20);
+
+    if (latestNews.length === 0) {
+      console.warn('⚠️  No news items fetched!');
+      process.exitCode = 0; // ビルドは継続
+    }
 
     const dataDir = path.join(process.cwd(), 'data');
     if (!fs.existsSync(dataDir)) {
