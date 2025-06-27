@@ -1,0 +1,24 @@
+name: fetch info data
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+jobs:
+  fetch-info:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: 
+          node-version: 20
+      - run: npm ci
+      - run: echo '{"temp":"22°C","condition":"晴れ"}' > data/weather.json
+      - run: echo '{"status":"火災情報なし"}' > data/fire.json  
+      - run: echo '{"status":"運行正常"}' > data/train.json
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/
+          git diff --staged --quiet || git commit -m "Update info data"
+          git push

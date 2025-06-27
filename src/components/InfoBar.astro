@@ -1,0 +1,43 @@
+---
+export interface Props {
+  type: 'weather' | 'fire' | 'train';
+}
+
+const { type } = Astro.props;
+
+let data;
+try {
+  if (type === 'weather') {
+    data = await import('../../data/weather.json').then(m => m.default).catch(() => ({ temp: '22°C', condition: '晴れ' }));
+  } else if (type === 'fire') {
+    data = await import('../../data/fire.json').then(m => m.default).catch(() => ({ status: '火災情報なし' }));
+  } else if (type === 'train') {
+    data = await import('../../data/train.json').then(m => m.default).catch(() => ({ status: '運行正常' }));
+  }
+} catch {
+  data = type === 'weather' ? { temp: '22°C', condition: '晴れ' } : 
+        type === 'fire' ? { status: '火災情報なし' } : 
+        { status: '運行正常' };
+}
+
+const icons = {
+  weather: '☀️',
+  fire: '🚒',
+  train: '🚃'
+};
+---
+
+<div class={`info-bar info-bar--${type}`}>
+  <span class="info-bar__icon">{icons[type]}</span>
+  <div class="info-bar__content">
+    {type === 'weather' && (
+      <span class="info-bar__text">{data.temp} {data.condition}</span>
+    )}
+    {type === 'fire' && (
+      <span class="info-bar__text">{data.status}</span>
+    )}
+    {type === 'train' && (
+      <span class="info-bar__text">{data.status}</span>
+    )}
+  </div>
+</div>

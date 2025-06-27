@@ -1,7 +1,7 @@
 ---
 import news from '../../data/news.json' assert { type: 'json' };
-const { top, fuchu } = news;
-let shown = 13;               // 初期表示 13
+import InfoBar from '../components/InfoBar.astro';
+let shown = 25;               // 初期表示 25
 ---
 
 <html lang="ja">
@@ -20,27 +20,21 @@ let shown = 13;               // 初期表示 13
         <p>府中市の最新情報をお届けします</p>
       </header>
       
+      <!-- InfoStack Section -->
+      <section class="info-stack">
+        <InfoBar type="weather" />
+        <InfoBar type="fire" />
+        <InfoBar type="train" />
+      </section>
+      
       <main>
-        <!-- ▼ 主要ニュース（7 件） -->
+        <!-- ニュース -->
         <section class="news-section">
-          <h2>主要ニュース</h2>
-          <div class="news-list">
-            {top.map((n: any, i: number) => (
+          <h2>ニュース</h2>
+          <div id="news" class="news-list">
+            {news.slice(0, shown).map((n: any) => (
               <article class="news-item">
-                <h3><a href={n.link} target="_blank">{i+1}. {n.title}</a></h3>
-                <time class="news-time">{n.formatted}</time>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <!-- ▼ 府中ニュース（13 件 + もっと見る） -->
-        <section class="news-section">
-          <h2>府中ニュース</h2>
-          <div id="fuchu" class="news-list">
-            {fuchu.slice(0, shown).map((n: any, i: number) => (
-              <article class="news-item">
-                <h3><a href={n.link} target="_blank">{i+1}. {n.title}</a></h3>
+                <h3><a href={n.link} target="_blank">{n.title}</a></h3>
                 <time class="news-time">{n.formatted}</time>
               </article>
             ))}
@@ -50,18 +44,18 @@ let shown = 13;               // 初期表示 13
       </main>
       
       <footer>
-        <p>&copy; 2025 ふちゅぽ – 府中市ポータル</p>
+        <p>&copy; 2025 ふちゅぽβ</p>
       </footer>
     </div>
     <script type="module">
-      const all = JSON.parse('{JSON.stringify(fuchu)}');
-      let shown = 13;
+      const all = JSON.parse('{JSON.stringify(news)}');
+      let shown = 25;
       document.getElementById('more').addEventListener('click', () => {
         shown += 10;
-        const list = document.getElementById('fuchu');
-        list.innerHTML = all.slice(0, shown).map((n,i)=>`
+        const list = document.getElementById('news');
+        list.innerHTML = all.slice(0, shown).map((n)=>`
           <article class="news-item">
-            <h3><a href="${n.link}" target="_blank">${i+1}. ${n.title}</a></h3>
+            <h3><a href="${n.link}" target="_blank">${n.title}</a></h3>
             <time class="news-time">${n.formatted}</time>
           </article>`).join('');
         

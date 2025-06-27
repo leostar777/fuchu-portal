@@ -1,6 +1,7 @@
 import Parser from 'rss-parser';
 import fs from 'fs';
 import path from 'path';
+import { formatJP } from '../src/utils/formatJP.js';
 
 interface NewsItem {
   title: string;
@@ -56,7 +57,7 @@ async function fetchNews(): Promise<void> {
 
     newsItems.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
 
-    const latestNews = newsItems.slice(0, 30);
+    const latestNews = newsItems.slice(0, 100);
 
     if (latestNews.length === 0) {
       console.warn('⚠️  No news items fetched!');
@@ -70,18 +71,15 @@ async function fetchNews(): Promise<void> {
       source: new URL(i.link!).hostname.replace('www.', '')
     }));
 
-    const top = enriched.slice(0, 7);
-    const fuchu = enriched.slice(7);
-
     const dataDir = path.join(process.cwd(), 'data');
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
 
     const outputPath = path.join(dataDir, 'news.json');
-    fs.writeFileSync(outputPath, JSON.stringify({ top, fuchu }, null, 2), 'utf-8');
+    fs.writeFileSync(outputPath, JSON.stringify(enriched, null, 2), 'utf-8');
     
-    console.log(`Successfully saved ${top.length} top news and ${fuchu.length} fuchu news items to ${outputPath}`);
+    console.log(`Successfully saved ${enriched.length} news items to ${outputPath}`);
     
     if (process.env.DISCORD_WEBHOOK_URL && enriched.length > 0) {
       await sendDiscordNotification(latestNews.slice(0, 3)); // 最新3件を通知
@@ -148,14 +146,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   fetchNews();
 }
 
-function formatJP(iso: string) {
-  const d = new Date(iso);
-  const w = '日月火水木金土'[d.getDay()];
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${mm}/${dd}(${w})${hh}:${mi}`;
-}
+
 
 export { fetchNews };
