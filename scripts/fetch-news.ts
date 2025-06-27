@@ -25,11 +25,9 @@ async function fetchNews(): Promise<void> {
     const newsItems: NewsItem[] = [];
     
     const FEEDS = [
-      'https://news.google.com/rss/search?q=%E5%BA%9C%E4%B8%AD%E5%B8%82&hl=ja&gl=JP&ceid=JP:ja',
+      'https://news.google.com/rss/search?q=%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%B8%AD%E5%B8%82&hl=ja&gl=JP&ceid=JP:ja',
       
-      'https://www3.nhk.or.jp/rss/news/cat0.xml',
-      
-      'https://news.yahoo.co.jp/rss/topics/top-picks.xml'
+      'https://news.google.com/rss/search?q=%E5%BA%9C%E4%B8%AD%E5%B8%82%20%E6%9D%B1%E4%BA%AC&hl=ja&gl=JP&ceid=JP:ja'
     ];
 
     for (const rssUrl of FEEDS) {
@@ -40,13 +38,24 @@ async function fetchNews(): Promise<void> {
         if (feed.items) {
           feed.items.forEach(item => {
             if (item.title && item.link && item.pubDate) {
-              newsItems.push({
-                title: item.title,
-                link: item.link,
-                pubDate: item.pubDate,
-                content: item.content,
-                contentSnippet: item.contentSnippet
-              });
+              const title = item.title.toLowerCase();
+              const isHiroshimaFuchu = title.includes('広島') || title.includes('hiroshima');
+              const isTokyoFuchu = title.includes('府中') && (
+                title.includes('東京') || 
+                title.includes('tokyo') ||
+                item.link?.includes('tokyo') ||
+                !title.includes('広島')
+              );
+              
+              if (isTokyoFuchu && !isHiroshimaFuchu) {
+                newsItems.push({
+                  title: item.title,
+                  link: item.link,
+                  pubDate: item.pubDate,
+                  content: item.content,
+                  contentSnippet: item.contentSnippet
+                });
+              }
             }
           });
         }
