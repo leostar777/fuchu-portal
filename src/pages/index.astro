@@ -1,13 +1,7 @@
 ---
-import fs from 'fs';
-
-let newsData = [];
-try {
-  const newsJson = fs.readFileSync('./data/news.json', 'utf-8');
-  newsData = JSON.parse(newsJson);
-} catch (error) {
-  console.log('News data not found, using empty array');
-}
+import news from '../../data/news.json' assert { type: 'json' };
+const { top, fuchu } = news;
+let shown = 13;               // 初期表示 13
 ---
 
 <html lang="ja">
@@ -27,21 +21,31 @@ try {
       </header>
       
       <main>
+        <!-- ▼ 主要ニュース（7 件） -->
         <section class="news-section">
-          <h2>最新ニュース</h2>
-          {newsData.length > 0 ? (
-            <ul class="news-list">
-              {newsData.map((item: any) => (
-                <li class="news-item">
-                  <h3><a href={item.link} target="_blank">{item.title}</a></h3>
-                  <p class="news-date">{new Date(item.pubDate).toLocaleDateString('ja-JP')}</p>
-                  <p class="news-content">{item.contentSnippet || item.content}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>ニュースデータを読み込み中...</p>
-          )}
+          <h2>主要ニュース</h2>
+          <div class="news-list">
+            {top.map((n: any, i: number) => (
+              <article class="news-item">
+                <h3><a href={n.link} target="_blank">{i+1}. {n.title}</a></h3>
+                <time class="news-time">{n.formatted}</time>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <!-- ▼ 府中ニュース（13 件 + もっと見る） -->
+        <section class="news-section">
+          <h2>府中ニュース</h2>
+          <div id="fuchu" class="news-list">
+            {fuchu.slice(0, shown).map((n: any, i: number) => (
+              <article class="news-item">
+                <h3><a href={n.link} target="_blank">{i+1}. {n.title}</a></h3>
+                <time class="news-time">{n.formatted}</time>
+              </article>
+            ))}
+          </div>
+          <button id="more" class="more-btn">もっと見る</button>
         </section>
       </main>
       
@@ -49,5 +53,22 @@ try {
         <p>&copy; 2025 ふちゅぽ – 府中市ポータル</p>
       </footer>
     </div>
+    <script type="module">
+      const all = JSON.parse('{JSON.stringify(fuchu)}');
+      let shown = 13;
+      document.getElementById('more').addEventListener('click', () => {
+        shown += 10;
+        const list = document.getElementById('fuchu');
+        list.innerHTML = all.slice(0, shown).map((n,i)=>`
+          <article class="news-item">
+            <h3><a href="${n.link}" target="_blank">${i+1}. ${n.title}</a></h3>
+            <time class="news-time">${n.formatted}</time>
+          </article>`).join('');
+        
+        if (shown >= all.length) {
+          document.getElementById('more').style.display = 'none';
+        }
+      });
+    </script>
   </body>
 </html>

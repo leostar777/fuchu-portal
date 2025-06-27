@@ -10,6 +10,13 @@ interface NewsItem {
   contentSnippet?: string;
 }
 
+interface EnrichedNewsItem {
+  title: string;
+  link: string;
+  formatted: string;
+  source: string;
+}
+
 const parser = new Parser();
 
 async function fetchNews(): Promise<void> {
@@ -49,12 +56,22 @@ async function fetchNews(): Promise<void> {
 
     newsItems.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
 
-    const latestNews = newsItems.slice(0, 20);
+    const latestNews = newsItems.slice(0, 30);
 
     if (latestNews.length === 0) {
       console.warn('⚠️  No news items fetched!');
       process.exitCode = 0; // ビルドは継続
     }
+
+    const enriched: EnrichedNewsItem[] = latestNews.map(i => ({
+      title: i.title ?? '',
+      link: i.link ?? '',
+      formatted: formatJP(i.pubDate!),
+      source: new URL(i.link!).hostname.replace('www.', '')
+    }));
+
+    const top = enriched.slice(0, 7);
+    const fuchu = enriched.slice(7);
 
     const dataDir = path.join(process.cwd(), 'data');
     if (!fs.existsSync(dataDir)) {
@@ -62,11 +79,11 @@ async function fetchNews(): Promise<void> {
     }
 
     const outputPath = path.join(dataDir, 'news.json');
-    fs.writeFileSync(outputPath, JSON.stringify(latestNews, null, 2), 'utf-8');
+    fs.writeFileSync(outputPath, JSON.stringify({ top, fuchu }, null, 2), 'utf-8');
     
-    console.log(`Successfully saved ${latestNews.length} news items to ${outputPath}`);
+    console.log(`Successfully saved ${top.length} top news and ${fuchu.length} fuchu news items to ${outputPath}`);
     
-    if (process.env.DISCORD_WEBHOOK_URL && latestNews.length > 0) {
+    if (process.env.DISCORD_WEBHOOK_URL && enriched.length > 0) {
       await sendDiscordNotification(latestNews.slice(0, 3)); // 最新3件を通知
     }
     
@@ -129,6 +146,16 @@ async function sendDiscordNotification(newsItems: NewsItem[]): Promise<void> {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   fetchNews();
+}
+
+function formatJP(iso: string) {
+  const d = new Date(iso);
+  const w = '日月火水木金土'[d.getDay()];
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return `${mm}/${dd}(${w})${hh}:${mi}`;
 }
 
 export { fetchNews };
