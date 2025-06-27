@@ -3,7 +3,7 @@ on:
   schedule:
     - cron: '15 * * * *'
   push:
-    branches: [ main ]
+    branches: [ main, init-astro-skeleton ]
   workflow_dispatch:
 jobs:
   build:
